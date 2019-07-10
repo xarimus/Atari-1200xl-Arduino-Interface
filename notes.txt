@@ -1,0 +1,75 @@
+##This resource shows how the arduino can function as a passthrough for SIO2PC. Would need to figure out talking to the MCU directly
+From https://forum.arduino.cc/index.php?topic=19177.0
+How to interface your vintage Atari 130XE (800XL and others) with a laptop in order to download and play games using the laptop as a substitute for the Atari floppy disk drive.
+
+Theory:
+Let's not forget that the Arduino Duemilanove Board has an FT232RL interface for USB transfers to your Atmega chip. (Dec/2011 update: This doesn't hold true for the new Arduino UNO boards, which replaced the FT232 with an Atmega8 chip.) 
+
+Well, removing the actual Atmega 328 from the board will let you play with the onboard FT232RL and use it to interface with the ATARI. (actually I'm not 100% sure if removing the microcontroller is at all necessary, but I didn't want to take any risks).
+
+You need only four wires from the SIO connector at the atari and no arduino code required.
+
+The COMMAND pin is located at the unsoldered X3 connector on the duemilanove, so I soldered a row of four pins even though you only need to use PIN 4.
+
+Links:
+thanks to Kinnon Stephens: http://www.stephens-home.com/sio2usb/ (Notice that his pinout differs from mine because he is interfacing against the SIO CABLE while I am interfacing against the Atari onboard Connector).
+and here: http://www.mixinc.net/atari/pinouts/sio.htm
+and here for the 810 Drive Emulator: http://retrobits.net/atari/atari810.shtml
+
+Works like a charm, takes 10 minutes.
+
+
+Connection details:
+
+The Atari serial connector pin-out (view when looking at the back of the Atari)
+
+
+                              1 1
+                   2 4 6 8 0 2
+                   -------------
+                 / o o o o o o  \
+                / o o o o o o o \
+                -------------------
+                  1 3 5 7 9  1 1
+                                  1 3
+
+
+     1  clock in
+     2  clock out
+     3  data in ------------------ > To Pin 0 on the Arduino board (RX)
+     4  GND --------------------- > To any GND pin on the Arduino board 
+     5  data out -----------------> To Pin 1 on the Arduino board (TX)
+     6  GND
+     7  command (active low) --- > To Pin 4 on the X3 connector on the Arduino board
+     8  cassette motor control
+     9  proceed (active low)
+    10  +5V/ready
+    11  audio in
+    12  +12V (400/800)
+    13  interrupt (active low)
+
+I used a protoshield for a cleaner connection. Note the 4-pins soldered to the X3 connector, that's the only soldering required for this project.
+The Atmega microcontroller was removed.
+
+Transfer floppy disks into .atr images or save .atr images into floppy diskettes!
+(SIO21050 or SIO2XF551 or SIO2DRIVE).
+
+
+You can interface other peripherals like a floppy disk drive (Atari 1050 or XF551) using a software called ProSystem (http://www.atarimax.com).
+
+In this case the connection is different, and my gratitude goes to Nick Kennedy for letting me know that (http://pages.suddenlink.net/wa5bdu/1050.txt) where he states: 
+
+"The COMMAND line is a bit more complicated.  In SIO2PC it uses a gate which converts TTL to RS-232.  It will now need an opposite conversion, RS-232 to TTL.  (...) Currently the RI (ring indicator) line, which is an input, is used.  The new hardware will use the RTS line, which is an output."
+
+Well, RTS didn't work for me, but DTR pin did. 
+
+So starting from the same setup as the above post, this time two changes are needed:
+
+- TX and RX get inverted 
+- and COMMAND line goes to the solder spot on the Arduino board labeled RESET-EN (right next to the USB connector) which goes straight to DTR(pin 2) on the FT232RL
+
+Here's the photo while archiving floppy diskettes to .atr files using an Atari XF551 drive (no Atari computer required):
+
+
+
+There is no need to open the cover of the drive for this project. The reason why you see it open is because I don't have the original power supply thus I had to open the case up and supply 12v and 5v directly to the drive from my bench power supply.
